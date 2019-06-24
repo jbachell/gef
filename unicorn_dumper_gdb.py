@@ -94,8 +94,19 @@ def dump_regs():
 #             reg_str = "0x{:016x}".format(reg_val)
 #         reg_state[reg.strip().strip('$')] = reg_str
         reg_state[reg.strip().strip('$')] = reg_val
-    reg = "$r0"
-    print(get_register(reg))
+
+    # print("Here:" + str(reg_state["r0"]))
+    # for reg in current_arch.all_registers:
+    #   print(reg_state[reg.reg.strip().strip('$')])
+
+    # reg_val = dump_float(32)
+
+
+    # reg = "$d0"
+    # print(help(gdb))
+    # hello = gdb.execute("i r $d0", to_string=True)
+    # print("Here" + str(hello[129:136]))
+    # print(get_register(reg))
 
     return reg_state
 
@@ -149,6 +160,28 @@ def dump_process_memory(output_dir):
             
     return final_segment_list
 
+#-----------------------
+#---- ARM Extention (dump floating point regs)
+
+def dump_float(rge=32):
+    reg_convert = ""
+    reg_state = {}
+    for reg_num in range(rge):
+        value = gdb.selected_frame().read_register("d" + str(reg_num))
+        reg_state["d" + str(reg_num)] = value["u64"]
+        # print(reg_state[reg.strip().strip('$')])
+        # reg_str = gdb.execute("i r $d" + str(reg_num), to_string=True)
+        # Now to parse the string
+        # for i in range(129, 137):
+        #    if '0' <= reg_str[i] <= '9' or 'a' <= reg_str[i] <= 'f':
+        #        reg_convert += str(reg_str[i])
+        #    else:
+        #        # We're done here
+        #        break
+        # reg_hex = hex(reg_covert)
+        # print(reg_hex)
+    return reg_state
+
 #----------
 #---- Main    
     
@@ -171,11 +204,14 @@ def main():
         if not os.path.exists(output_path):
             os.makedirs(output_path)
         print("Process context will be output to {}".format(output_path))
-            
+
+        # print(dump_regs());
+        print(dump_float(32))
         # Get the context
         context = {
             "arch": dump_arch_info(),
-            "regs": dump_regs(), 
+            "regs": dump_regs(),
+            "floating_regs_ARM" : dump_float(),
             "segments": dump_process_memory(output_path),
         }
 
